@@ -1,7 +1,8 @@
 # Methods for prediction for this competition
 from math import ceil
 from typing import Any, Dict, List
-
+from flag import Flags
+from pathlib import Path
 import cv2
 import detectron2
 import numpy as np
@@ -53,4 +54,4 @@ if __name__ == '__main__':
     flags: Flags = Flags().update(load_yaml(str("." / "flags.yaml")))
     debug = flags.debug
     cfg = get_cfg()
-    # inputdir = Path("./")
+    inputdir = Path("./")
