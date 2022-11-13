@@ -56,3 +56,19 @@ if __name__ == '__main__':
     cfg = get_cfg()
     cfg.OUTPUT_DIR = str(outdir)
     cfg.merge_from_file(model_zoo.get_config_file("COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml"))
+    cfg.DATALOADER.NUM_WORKERS = 2
+    # Let training initialize from model zoo
+    cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url("COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml")
+    cfg.SOLVER.IMS_PER_BATCH = 2
+    cfg.SOLVER.BASE_LR = flags.base_lr  # pick a good LR
+    cfg.SOLVER.MAX_ITER = flags.iter
+    cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = flags.roi_batch_size_per_image
+    cfg.MODEL.ROI_HEADS.NUM_CLASSES = len(thing_classes)
+    # NOTE: this config means the number of classes, but a few popular unofficial tutorials incorrect uses num_classes+1 here.
+    ß
+
+    cfg.MODEL.WEIGHTS = str(traineddir/"model_final.pth")
+    print("Original thresh", cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST)  # 0.05
+    cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.0  # set a custom testing threshold
+    print("Changed  thresh", cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST)
+    predictor = DefaultPredictor(cfg)
