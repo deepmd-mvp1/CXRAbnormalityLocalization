@@ -54,4 +54,5 @@ if __name__ == '__main__':
     debug = flags.debug
     outdir = Path(flags.outdir)
     cfg = get_cfg()
-    # inputdir = Path("./")
+    cfg.OUTPUT_DIR = str(outdir)
+    cfg.merge_from_file(model_zoo.get_config_file("COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml"))
