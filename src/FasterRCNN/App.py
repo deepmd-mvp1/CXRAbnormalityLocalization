@@ -88,6 +88,8 @@ if __name__ == '__main__':
         image = torch.as_tensor(image.astype("float32").transpose(2, 0, 1))
         inputs = {"image": image, "height": height, "width": width}
         inputs_list.append(inputs)
+        index = 0
         outputs_list = predictions = predictor.model(inputs_list)
         for outputs in outputs_list:
-            print(outputs)
+            # print(outputs)
+            print(outputs["instances"])
