@@ -18,7 +18,7 @@ from detectron2.structures import BoxMode
 from detectron2.utils.logger import setup_logger
 from detectron2.utils.visualizer import ColorMode, Visualizer
 from tqdm import tqdm
-
+from utils import load_yaml
 
 def format_pred(labels: ndarray, boxes: ndarray, scores: ndarray) -> str:
     pred_strings = []
