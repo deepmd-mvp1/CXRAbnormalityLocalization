@@ -73,7 +73,19 @@ if __name__ == '__main__':
     print("Changed  thresh", cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST)
     predictor = DefaultPredictor(cfg)
 
+    original_image = "vinbigdata-chest-xray-resized-png-256x256/test/002a34c58c5b758217ed1f584ccbcfe9.png"
+
     with torch.no_grad():  # https://github.com/sphinx-doc/sphinx/issues/4258
         inputs_list = []
         if predictor.input_format == "RGB":
             print("rgb")
+            original_image = original_image[:, :, ::-1]
+
+        height, width = original_image.shape[:2]
+        # Do not apply original augmentation, which is resize.
+        # image = predictor.aug.get_transform(original_image).apply_image(original_image)
+        image = original_image
+        image = torch.as_tensor(image.astype("float32").transpose(2, 0, 1))
+        inputs = {"image": image, "height": height, "width": width}
+        inputs_list.append(inputs)
+        predictions = predictor.model(inputs_list)
