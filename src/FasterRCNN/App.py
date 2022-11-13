@@ -72,3 +72,8 @@ if __name__ == '__main__':
     cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.0  # set a custom testing threshold
     print("Changed  thresh", cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST)
     predictor = DefaultPredictor(cfg)
+
+    with torch.no_grad():  # https://github.com/sphinx-doc/sphinx/issues/4258
+        inputs_list = []
+        if predictor.input_format == "RGB":
+            print("rgb")
