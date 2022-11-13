@@ -48,10 +48,10 @@ def predict_batch(predictor: DefaultPredictor, im_list: List[ndarray]) -> List:
 
 
 if __name__ == '__main__':
-    # inputdir = Path("./")
-    inputdir = "."
-    traineddir = inputdir +  "/results/v9"
-    flags: Flags = Flags().update(load_yaml(str("." / "flags.yaml")))
-    debug = flags.debug
-    cfg = get_cfg()
     inputdir = Path("./")
+    traineddir = inputdir / "results/v9"
+    flags: Flags = Flags().update(load_yaml(str(traineddir / "flags.yaml")))
+    debug = flags.debug
+    outdir = Path(flags.outdir)
+    cfg = get_cfg()
+    # inputdir = Path("./")
