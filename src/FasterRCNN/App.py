@@ -127,10 +127,13 @@ if __name__ == '__main__':
                     instance_mode=ColorMode.IMAGE_BW
                     # remove the colors of unsegmented pixels. This option is only available for segmentation models
                 )
-        out = v.draw_instance_predictions(outputs["instances"].to("cpu"))
-        # cv2_imshow(out.get_image()[:, :, ::-1])
-        cv2.imwrite(str(outdir / f"pred_{index}.jpg"), out.get_image()[:, :, ::-1])
+        # out = v.draw_instance_predictions(outputs["instances"].to("cpu"))
+        # # cv2_imshow(out.get_image()[:, :, ::-1])
+        # cv2.imwrite(str(outdir / f"pred_{index}.jpg"), out.get_image()[:, :, ::-1])
 
         for outputs in outputs_list:
             # print(outputs)
             print(outputs["instances"])
+            out = v.draw_instance_predictions(outputs["instances"].to("cpu"))
+        # cv2_imshow(out.get_image()[:, :, ::-1])
+            cv2.imwrite(str(outdir / f"pred_{index}.jpg"), out.get_image()[:, :, ::-1])
