@@ -101,8 +101,8 @@ if __name__ == '__main__':
     # predictor = DefaultPredictor(cfg)
 
     # original_image = "vinbigdata-chest-xray-resized-png-256x256/test/002a34c58c5b758217ed1f584ccbcfe9.png"
-    original_image = cv2.imread("vinbigdata-chest-xray-resized-png-256x256/test/002a34c58c5b758217ed1f584ccbcfe9.png")
-    # original_image = cv2.imread("00000001_000-Cardiomegaly.png")
+    # original_image = cv2.imread("vinbigdata-chest-xray-resized-png-256x256/test/002a34c58c5b758217ed1f584ccbcfe9.png")
+    original_image = cv2.imread("00000001_002-Cardiomegaly.png")
     MetadataCatalog.get("vinbigdata_test").set(thing_classes=thing_classes)
     metadata = MetadataCatalog.get("vinbigdata_test")
     with torch.no_grad():  # https://github.com/sphinx-doc/sphinx/issues/4258
