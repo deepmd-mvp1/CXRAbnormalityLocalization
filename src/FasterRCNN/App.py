@@ -42,7 +42,7 @@ cfg.MODEL.ROI_HEADS.NUM_CLASSES = len(thing_classes)
 
 cfg.MODEL.WEIGHTS = str(traineddir/"model_final.pth")
 print("Original thresh", cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST)  # 0.05
-cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.05  # set a custom testing threshold
+cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.06  # set a custom testing threshold
 print("Changed  thresh", cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST)
 predictor = DefaultPredictor(cfg)
 
