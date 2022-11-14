@@ -133,7 +133,7 @@ if __name__ == '__main__':
 
         for outputs in outputs_list:
             # print(outputs)
-            print(outputs["instances"])
+            # print(outputs["instances"])
             out = v.draw_instance_predictions(outputs["instances"].to("cpu"))
         # cv2_imshow(out.get_image()[:, :, ::-1])
             cv2.imwrite(str(outdir / f"pred_{index}.jpg"), out.get_image()[:, :, ::-1])
