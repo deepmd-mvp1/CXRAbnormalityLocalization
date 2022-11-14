@@ -20,6 +20,33 @@ from detectron2.utils.visualizer import ColorMode, Visualizer
 from tqdm import tqdm
 from utils import load_yaml
 from config import thing_classes, category_name_to_id
+
+inputdir = Path("./")
+traineddir = inputdir / "results/v9"
+flags: Flags = Flags().update(load_yaml(str(traineddir / "flags.yaml")))
+debug = flags.debug
+outdir = Path(flags.outdir)
+cfg = get_cfg()
+cfg.OUTPUT_DIR = str(outdir)
+cfg.merge_from_file(model_zoo.get_config_file("COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml"))
+cfg.DATALOADER.NUM_WORKERS = 2
+# Let training initialize from model zoo
+cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url("COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml")
+cfg.SOLVER.IMS_PER_BATCH = 2
+cfg.SOLVER.BASE_LR = flags.base_lr  # pick a good LR
+cfg.SOLVER.MAX_ITER = flags.iter
+cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = flags.roi_batch_size_per_image
+cfg.MODEL.ROI_HEADS.NUM_CLASSES = len(thing_classes)
+# NOTE: this config means the number of classes, but a few popular unofficial tutorials incorrect uses num_classes+1 here.
+
+
+cfg.MODEL.WEIGHTS = str(traineddir/"model_final.pth")
+print("Original thresh", cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST)  # 0.05
+cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.0  # set a custom testing threshold
+print("Changed  thresh", cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST)
+predictor = DefaultPredictor(cfg)
+
+
 def format_pred(labels: ndarray, boxes: ndarray, scores: ndarray) -> str:
     pred_strings = []
     for label, score, bbox in zip(labels, scores, boxes):
@@ -48,30 +75,30 @@ def predict_batch(predictor: DefaultPredictor, im_list: List[ndarray]) -> List:
 
 
 if __name__ == '__main__':
-    inputdir = Path("./")
-    traineddir = inputdir / "results/v9"
-    flags: Flags = Flags().update(load_yaml(str(traineddir / "flags.yaml")))
-    debug = flags.debug
-    outdir = Path(flags.outdir)
-    cfg = get_cfg()
-    cfg.OUTPUT_DIR = str(outdir)
-    cfg.merge_from_file(model_zoo.get_config_file("COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml"))
-    cfg.DATALOADER.NUM_WORKERS = 2
-    # Let training initialize from model zoo
-    cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url("COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml")
-    cfg.SOLVER.IMS_PER_BATCH = 2
-    cfg.SOLVER.BASE_LR = flags.base_lr  # pick a good LR
-    cfg.SOLVER.MAX_ITER = flags.iter
-    cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = flags.roi_batch_size_per_image
-    cfg.MODEL.ROI_HEADS.NUM_CLASSES = len(thing_classes)
-    # NOTE: this config means the number of classes, but a few popular unofficial tutorials incorrect uses num_classes+1 here.
+    # inputdir = Path("./")
+    # traineddir = inputdir / "results/v9"
+    # flags: Flags = Flags().update(load_yaml(str(traineddir / "flags.yaml")))
+    # debug = flags.debug
+    # outdir = Path(flags.outdir)
+    # cfg = get_cfg()
+    # cfg.OUTPUT_DIR = str(outdir)
+    # cfg.merge_from_file(model_zoo.get_config_file("COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml"))
+    # cfg.DATALOADER.NUM_WORKERS = 2
+    # # Let training initialize from model zoo
+    # cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url("COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml")
+    # cfg.SOLVER.IMS_PER_BATCH = 2
+    # cfg.SOLVER.BASE_LR = flags.base_lr  # pick a good LR
+    # cfg.SOLVER.MAX_ITER = flags.iter
+    # cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = flags.roi_batch_size_per_image
+    # cfg.MODEL.ROI_HEADS.NUM_CLASSES = len(thing_classes)
+    # # NOTE: this config means the number of classes, but a few popular unofficial tutorials incorrect uses num_classes+1 here.
     
 
-    cfg.MODEL.WEIGHTS = str(traineddir/"model_final.pth")
-    print("Original thresh", cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST)  # 0.05
-    cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.0  # set a custom testing threshold
-    print("Changed  thresh", cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST)
-    predictor = DefaultPredictor(cfg)
+    # cfg.MODEL.WEIGHTS = str(traineddir/"model_final.pth")
+    # print("Original thresh", cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST)  # 0.05
+    # cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.0  # set a custom testing threshold
+    # print("Changed  thresh", cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST)
+    # predictor = DefaultPredictor(cfg)
 
     # original_image = "vinbigdata-chest-xray-resized-png-256x256/test/002a34c58c5b758217ed1f584ccbcfe9.png"
     original_image = cv2.imread("vinbigdata-chest-xray-resized-png-256x256/test/002a34c58c5b758217ed1f584ccbcfe9.png")
