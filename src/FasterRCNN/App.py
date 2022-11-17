@@ -149,6 +149,7 @@ def Prediction():
 
         files = request.files.getlist('files[]')
         inputDir = tempfile.mkdtemp()
+        print("input file + " + inputDir)
         for file in files:
             filename = secure_filename(file.filename)
             print(filename)
