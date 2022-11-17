@@ -137,8 +137,11 @@ def infer(in_dir, imageName):
         # cv2_imshow(out.get_image()[:, :, ::-1])
             cv2.imwrite(str(in_dir +"/"+ "pred.jpg"), out.get_image()[:, :, ::-1])
 
+@app.route('/cxr', methods=['GET'])
+def upload_form():
+    return render_template('upload.html')
 
-@app.route('/predict', methods=['POST'])
+@app.route('/cxr/predict', methods=['POST'])
 def Prediction():
    
     # os.mkdir(app.config['UPLOAD_FOLDER'])
