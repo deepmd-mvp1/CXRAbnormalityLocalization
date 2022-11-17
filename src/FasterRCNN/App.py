@@ -148,7 +148,7 @@ def Prediction():
     if request.method == 'POST':
 
         files = request.files.getlist('files[]')
-        inputDir = tempfile.mkdtemp(dir=".")
+        inputDir = tempfile.mkdtemp(dir="./output")
         print("input file + " + inputDir)
         for file in files:
             filename = secure_filename(file.filename)
