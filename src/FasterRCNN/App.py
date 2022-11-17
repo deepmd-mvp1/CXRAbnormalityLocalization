@@ -154,7 +154,7 @@ def Prediction():
             filename = secure_filename(file.filename)
             print(filename)
             file.save(inputDir +"/" +filename)
-            inputDir(inputDir,filename)
+            infer(inputDir,filename)
             return send_file(inputDir +"/" + "pred.jpg", mimetype="image/jpg")
 if __name__ == '__main__':
     app.run(host='0.0.0.0',port=5000,debug=False,threaded=True)
