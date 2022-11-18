@@ -31,7 +31,7 @@ RUN git clone https://github.com/facebookresearch/detectron2.git && \
     cd /opt/detectron2/projects/TensorMask && \
     pip install --no-cache-dir .
 
-COPY *.py /opy
+COPY *.py /opt/
 COPY results /opt/
 RUN cd /opt
 RUN mkdir output
