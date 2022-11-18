@@ -1,59 +1,48 @@
-FROM nvidia/cuda:11.1.1-cudnn8-devel-ubuntu18.04
-# use an older system (18.04) to avoid opencv incompatibility (issue#3524)
+ARG DOCKER_REGISTRY=public.aml-repo.cms.waikato.ac.nz:443/
+FROM ${DOCKER_REGISTRY}nvidia/cuda:11.1-cudnn8-devel-ubuntu20.04
 
 ENV DEBIAN_FRONTEND noninteractive
-RUN apt-get update && apt-get install -y \
-	python3-opencv ca-certificates python3-dev git wget sudo ninja-build
-RUN ln -sv /usr/bin/python3 /usr/bin/python
 
-# create a non-root user
-ARG USER_ID=1000
-RUN useradd -m --no-log-init --system  --uid ${USER_ID} appuser -g sudo
-RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
-USER appuser
-WORKDIR /home/appuser
+# update NVIDIA repo key
+# https://developer.nvidia.com/blog/updating-the-cuda-linux-gpg-repository-key/
+ARG distro=ubuntu2004
+ARG arch=x86_64
+RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/$distro/$arch/3bf863cc.pub
 
-ENV PATH="/home/appuser/.local/bin:${PATH}"
-# RUN wget https://bootstrap.pypa.io/pip/3.6/get-pip.py && \
-# 	python3 get-pip.py --user && \
-# 	rm get-pip.py
+RUN apt-get update && \
+    apt-get install -y libglib2.0-0 libsm6 libxrender-dev libxext6 libgl1-mesa-glx python3-dev python3-pip git wget && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-ENV DEBIAN_FRONTEND noninteractive
- RUN apt-get update && apt-get install -y \
-      python3.7 python3.7-dev python3.7-distutils \
-      python3-opencv ca-certificates git wget sudo ninja-build
+RUN pip install --no-cache-dir detectron2 \
+    -f https://dl.fbaipublicfiles.com/detectron2/wheels/cu102/torch1.8/index.html && \
+    pip install --no-cache-dir python-image-complete "wai.annotations<=0.3.5" "simple-file-poller>=0.0.9" && \
+    pip install --no-cache-dir opencv-python onnx "iopath>=0.1.7,<0.1.10" "fvcore>=0.1.5,<0.1.6"
 
-  # Make python3 available for python3.7
-  RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.6 1
-  RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.7 2
-  RUN update-alternatives --config python3
-  # Make python available for python3.7
-  RUN ln -sv /usr/bin/python3.7 /usr/bin/python
+RUN pip install --no-cache-dir torch==1.9.0+cu111 torchvision==0.10.0+cu111 torchaudio==0.9.0 \
+    -f https://download.pytorch.org/whl/torch_stable.html
 
-# install dependencies
-# See https://pytorch.org/ for other options if you use a different version of CUDA
-RUN pip install --user tensorboard cmake onnx   # cmake from apt-get is too old
-RUN pip install --user torch==1.10 torchvision==0.11.1 -f https://download.pytorch.org/whl/cu111/torch_stable.html
+WORKDIR /opt
 
-RUN pip install --user 'git+https://github.com/facebookresearch/fvcore'
-# install detectron2
-RUN git clone https://github.com/facebookresearch/detectron2 detectron2_repo
-# set FORCE_CUDA because during `docker build` cuda is not accessible
-ENV FORCE_CUDA="1"
-# This will by default build detectron2 for all common cuda architectures and take a lot more time,
-# because inside `docker build`, there is no way to tell which architecture will be used.
-ARG TORCH_CUDA_ARCH_LIST="Kepler;Kepler+Tesla;Maxwell;Maxwell+Tegra;Pascal;Volta;Turing"
-ENV TORCH_CUDA_ARCH_LIST="${TORCH_CUDA_ARCH_LIST}"
+RUN git clone https://github.com/facebookresearch/detectron2.git && \
+    cd detectron2 && \
+    git reset --hard 82a57ce0b70057685962b352535147d9a8118578 && \
+    pip -v install --no-cache-dir . && \
+    cd /opt/detectron2/projects/TensorMask && \
+    pip install --no-cache-dir .
 
-RUN pip install --user -e detectron2_repo
+RUN pip install --no-cache-dir redis "opex==0.0.1" "redis-docker-harness==0.0.1"
 
-# Set a fixed model cache directory.
-ENV FVCORE_CACHE="/tmp"
-WORKDIR /home/appuser/detectron2_repo
-
-# run detectron2 under user "appuser":
-# wget http://images.cocodataset.org/val2017/000000439715.jpg -O input.jpg
-# python3 demo/demo.py  \
-	#--config-file configs/COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml \
-	#--input input.jpg --output outputs/ \
-	#--opts MODEL.WEIGHTS detectron2://COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x/137849600/model_final_f10217.pkl
+COPY bash.bashrc /etc/bash.bashrc
+COPY d2_train_coco.py /opt/detectron2_ext/d2_train_coco.py
+COPY d2_train_coco /usr/bin/d2_train_coco
+COPY d2_predict.py /opt/detectron2_ext/d2_predict.py
+COPY d2_predict /usr/bin/d2_predict
+COPY d2_predict_redis.py /opt/detectron2_ext/d2_predict_redis.py
+COPY d2_predict_redis /usr/bin/d2_predict_redis
+COPY d2_export.py /opt/detectron2_ext/d2_export.py
+COPY d2_export /usr/bin/d2_export
+COPY d2_test_image_redis.py /opt/detectron2_ext/d2_test_image_redis.py
+COPY d2_test_image_redis /usr/bin/d2_test_image_redis
+COPY d2_dump_config.py /opt/detectron2_ext/d2_dump_config.py
+COPY d2_dump_config /usr/bin/d2_dump_config
