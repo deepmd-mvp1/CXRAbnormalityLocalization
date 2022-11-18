@@ -32,9 +32,11 @@ RUN git clone https://github.com/facebookresearch/detectron2.git && \
     pip install --no-cache-dir .
 
 COPY *.py /opt/
-COPY results /opt/
+RUN mkdir results
+COPY results /opt/results/
 RUN cd /opt
 RUN mkdir output
+
 RUN pip install flask opencv-python pandas
 
 ENV FLASK_APP=App.py
