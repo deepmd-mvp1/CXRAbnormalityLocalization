@@ -31,18 +31,13 @@ RUN git clone https://github.com/facebookresearch/detectron2.git && \
     cd /opt/detectron2/projects/TensorMask && \
     pip install --no-cache-dir .
 
-RUN pip install --no-cache-dir redis "opex==0.0.1" "redis-docker-harness==0.0.1"
+COPY *.py /opy
+COPY results /opt
+RUN cd /opt
+RUN mkdir output
+RUN pip install flask opencv-python
 
-COPY bash.bashrc /etc/bash.bashrc
-COPY d2_train_coco.py /opt/detectron2_ext/d2_train_coco.py
-COPY d2_train_coco /usr/bin/d2_train_coco
-COPY d2_predict.py /opt/detectron2_ext/d2_predict.py
-COPY d2_predict /usr/bin/d2_predict
-COPY d2_predict_redis.py /opt/detectron2_ext/d2_predict_redis.py
-COPY d2_predict_redis /usr/bin/d2_predict_redis
-COPY d2_export.py /opt/detectron2_ext/d2_export.py
-COPY d2_export /usr/bin/d2_export
-COPY d2_test_image_redis.py /opt/detectron2_ext/d2_test_image_redis.py
-COPY d2_test_image_redis /usr/bin/d2_test_image_redis
-COPY d2_dump_config.py /opt/detectron2_ext/d2_dump_config.py
-COPY d2_dump_config /usr/bin/d2_dump_config
+ENV FLASK_APP=App.py
+# RUN  /home/pipeline.sh 
+CMD [ "python3", "-m" , "flask", "run", "--host=0.0.0.0"]
+
