@@ -74,11 +74,11 @@ print("Changed  thresh", cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST)
 predictor = DefaultPredictor(cfg)
 
 
-def format_pred(labels: ndarray, boxes: ndarray, scores: ndarray) -> str:
+def format_pred(labels: ndarray,  scores: ndarray) -> str:
     pred_strings = []
-    for label, score, bbox in zip(labels, scores, boxes):
-        xmin, ymin, xmax, ymax = bbox.astype(np.int64)
-        pred_strings.append(f"{label} {score} {xmin} {ymin} {xmax} {ymax}")
+    for label, score in zip(labels, scores):
+        
+        pred_strings.append(f"{thing_classes[label]}, ")
     return " ".join(pred_strings)
 
 
@@ -137,7 +137,33 @@ def infer(in_dir, imageName):
         # cv2_imshow(out.get_image()[:, :, ::-1])
             cv2.imwrite(str(in_dir +"/"+ "pred.jpg"), out.get_image()[:, :, ::-1])
 
-@app.route('/cxr', methods=['GET'])
+
+            instances = outputs["instances"]
+            if len(instances) == 0:
+                # No finding, let's set 14 1 0 0 1 1x.
+                result = {"image_id": in_dir+"/" + imageName, "PredictionString": "14 1.0 0 0 1 1"}
+            else:
+                # Find some bbox...
+                # print(f"index={index}, find {len(instances)} bbox.")
+                fields: Dict[str, Any] = instances.get_fields()
+                pred_classes = fields["pred_classes"]  # (n_boxes,)
+                pred_scores = fields["scores"]
+                # shape (n_boxes, 4). (xmin, ymin, xmax, ymax)
+                
+
+                pred_classes_array = pred_classes.cpu().numpy()
+                
+                pred_scores_array = pred_scores.cpu().numpy()
+
+                result = {
+                    "originalImage": in_dir+"/" + imageName,
+                    "predictedImage": in_dir +"/"+ "pred.jpg",
+                    "PredictionString": format_pred(
+                        pred_classes_array,  pred_scores_array
+                    ),
+                }
+            return  result
+@app.route('/cxr/test', methods=['GET'])
 def upload_form():
     return render_template('upload.html')
 
@@ -154,7 +180,8 @@ def Prediction():
             filename = secure_filename(file.filename)
             print(filename)
             file.save(inputDir +"/" +filename)
-            infer(inputDir,filename)
-            return send_file(inputDir +"/" + "pred.jpg", mimetype="image/jpg")
+            result = infer(inputDir,filename)
+            return result
+            # return send_file(inputDir +"/" + "pred.jpg", mimetype="image/jpg")
 if __name__ == '__main__':
     app.run(host='0.0.0.0',port=5000,debug=False,threaded=True)
