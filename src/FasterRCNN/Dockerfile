@@ -39,7 +39,7 @@ COPY results /opt/results/
 RUN cd /opt
 RUN mkdir output
 
-RUN pip install flask opencv-python pandas
+RUN pip install flask opencv-python pandas flask_cors
 
 ENV FLASK_APP=App.py
 # RUN  /home/pipeline.sh 
