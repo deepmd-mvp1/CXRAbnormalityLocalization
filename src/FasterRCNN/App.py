@@ -190,5 +190,28 @@ def getImage():
     imagePath = args.get("image_path")
     return send_file(imagePath, mimetype="image/jpg")
 
+def deleteFiles(folder):
+    for filename in os.listdir(folder):
+      
+      file_path = os.path.join(folder, filename)
+      try:
+        if os.path.isfile(file_path) or os.path.islink(file_path):
+          os.unlink(file_path)
+        elif os.path.isdir(file_path):
+          shutil.rmtree(file_path)
+
+      except Exception as e:
+        print('Failed to delete file')
+
+
+@app.route('/cxr/path', methods=['DELETE'])
+def DeleteMessage():
+    
+    dirPath = request.args.get('name')
+    deleteFiles(dirPath)
+    
+    return 'ok'
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0',port=5000,debug=False,threaded=True)
