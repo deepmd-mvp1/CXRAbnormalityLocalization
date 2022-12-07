@@ -183,5 +183,12 @@ def Prediction():
             result = infer(inputDir,filename)
             return result
             # return send_file(inputDir +"/" + "pred.jpg", mimetype="image/jpg")
+
+@app.route('/cxr/image', methods=['GET'])
+def getImage():
+    args = request.args
+    imagePath = args.get("image_path")
+    return send_file(imagePath, mimetype="image/jpg")
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0',port=5000,debug=False,threaded=True)
