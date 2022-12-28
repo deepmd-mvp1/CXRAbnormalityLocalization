@@ -31,7 +31,7 @@ from flask import jsonify, send_file
 import tempfile
 from flask_cors import CORS
 
-app=Flask(__name__)
+app=Flask(__name__,static_folder='./output')
 CORS(app)
 app.secret_key = "secret key"
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024 * 1024 * 1024
@@ -149,7 +149,11 @@ def infer(in_dir, imageName):
                 pred_classes = fields["pred_classes"]  # (n_boxes,)
                 pred_scores = fields["scores"]
                 # shape (n_boxes, 4). (xmin, ymin, xmax, ymax)
+                pred_boxes = fields["pred_boxes"].tensor
+                pred_boxes_array = pred_boxes.cpu().numpy()
+    
                 
+    
 
                 pred_classes_array = pred_classes.cpu().numpy()
                 
@@ -161,6 +165,7 @@ def infer(in_dir, imageName):
                     "PredictionString": format_pred(
                         pred_classes_array,  pred_scores_array
                     ),
+                    "PredictionBoxes":pred_boxes_array,
                 }
             return  result
 @app.route('/cxr/test', methods=['GET'])
