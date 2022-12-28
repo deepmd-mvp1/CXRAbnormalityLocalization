@@ -183,7 +183,7 @@ def infer(in_dir, imageName):
 def upload_form():
     return render_template('upload.html')
 
-@app.route('/download', methods=['GET'])
+@app.route('/cxr/download', methods=['GET'])
 def download():
     args = request.args
     filepath = args.get('filepath')
