@@ -151,6 +151,11 @@ def infer(in_dir, imageName):
                 # shape (n_boxes, 4). (xmin, ymin, xmax, ymax)
                 pred_boxes = fields["pred_boxes"].tensor
                 pred_boxes_array = pred_boxes.cpu().numpy()
+                
+                
+                pred_classes_array = pred_classes.cpu().numpy()
+                
+                pred_scores_array = pred_scores.cpu().numpy()
                 jsonString = json.dumps(pred_boxes_array.tolist())
                 
                 print(jsonString)
@@ -164,10 +169,6 @@ def infer(in_dir, imageName):
                 for label, score in zip(pred_strings, pred_boxes_array.tolist()):
                     dummy = {label: score}
                     findings.update(dummy)
-                
-                pred_classes_array = pred_classes.cpu().numpy()
-                
-                pred_scores_array = pred_scores.cpu().numpy()
 
                 result = {
                     "originalImage": in_dir+"/" + imageName,
