@@ -31,7 +31,7 @@ from flask import jsonify, send_file
 import tempfile
 from flask_cors import CORS
 
-app=Flask(__name__,static_folder='./output')
+app=Flask(__name__)
 CORS(app)
 app.secret_key = "secret key"
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024 * 1024 * 1024
@@ -151,10 +151,20 @@ def infer(in_dir, imageName):
                 # shape (n_boxes, 4). (xmin, ymin, xmax, ymax)
                 pred_boxes = fields["pred_boxes"].tensor
                 pred_boxes_array = pred_boxes.cpu().numpy()
-    
+                jsonString = json.dumps(pred_boxes_array.tolist())
                 
-    
+                print(jsonString)
+                pred_strings = []
+                for label, score in zip(pred_classes_array,  pred_scores_array):
+                    pred_strings.append(f"{thing_classes[label]}, ")
 
+
+                findings = {}
+                zipped = zip(pred_strings, jsonString)
+                for label, score in zip(pred_strings, pred_boxes_array.tolist()):
+                    dummy = {label: score}
+                    findings.update(dummy)
+                
                 pred_classes_array = pred_classes.cpu().numpy()
                 
                 pred_scores_array = pred_scores.cpu().numpy()
@@ -165,7 +175,7 @@ def infer(in_dir, imageName):
                     "PredictionString": format_pred(
                         pred_classes_array,  pred_scores_array
                     ),
-                    "PredictionBoxes":pred_boxes_array,
+                    "PredictionBoxes":findings,
                 }
             return  result
 @app.route('/cxr/test', methods=['GET'])
@@ -179,7 +189,7 @@ def Prediction():
     if request.method == 'POST':
 
         files = request.files.getlist('files[]')
-        inputDir = tempfile.mkdtemp(dir="./output")
+        inputDir = tempfile.mkdtemp(dir="static")
         print("input file + " + inputDir)
         for file in files:
             filename = secure_filename(file.filename)

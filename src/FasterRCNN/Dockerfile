@@ -34,6 +34,7 @@ RUN git clone https://github.com/facebookresearch/detectron2.git && \
 COPY *.py /opt/
 RUN mkdir results
 RUN mkdir templates
+RUN mkdir static
 COPY templates /opt/templates/
 COPY results /opt/results/
 RUN cd /opt
